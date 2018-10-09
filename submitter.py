@@ -23,8 +23,9 @@ def submit(batch, program_args, global_options, task_options, dry_run = None):
         Extra fields which can be specified are:
          - "task_idx", incremented for each task submitted
 
-    program_args : string
-        A string representing the command line options, with substitutable fields in braces
+    program_args : string or list
+        A string representing the command line options, with substitutable fields in braces.
+        If a list is passed, a CSV file will be written with the options.
 
     global_options : dict
         A dict containing keys corresponding to the fields in curly braces, with the default
@@ -46,7 +47,12 @@ def submit(batch, program_args, global_options, task_options, dry_run = None):
         dry_run = args.dry_run
 
     for k in global_options:
-        if '{'+str(k)+'}' not in batch + program_args:
+        if isinstance(program_args, str):
+            program_arg_str = program_args
+        else:
+            program_arg_str = ''.join('{%s}'%x for x in program_args)
+
+        if '{'+str(k)+'}' not in batch + program_arg_str:
             print('Warning: key %s from global_options not used.' % k)
 
     for n,d in enumerate(task_options):
@@ -93,7 +99,13 @@ def submit(batch, program_args, global_options, task_options, dry_run = None):
         for nv,v in enumerate(expanded):
 
             v.update({'array_idx':nv})
-            o = program_args.format(**v)
+
+            if isinstance(program_args, str):
+                o = program_args.format(**v)
+            else:
+                o = ''
+                for option_name in program_args:
+                    o += '%s,%s\n' % (option_name, v[option_name])
 
             if args.dry_run:
                 print(nv, ':\n', o, sep='', end = '\n\n')
