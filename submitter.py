@@ -83,7 +83,7 @@ def submit(batch, program_args, global_options, task_options, dry_run = None):
             for p in to_make[::-1]:
                 mkdir(p)
 
-            with open(path.join(tmp_vals['output_dir'], tmp_vals['name'])+'.batch','w') as f:
+            with open(path.join(tmp_vals['output_dir'], tmp_vals['name'])+'.batch','x') as f:
                 f.write(batch_out)
 
         if args.dry_run:
